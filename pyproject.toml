@@ -5,6 +5,16 @@ requires = [
 ]
 build-backend = "hatchling.build"
 
+[tool.poetry]
+name = "target-clickhouse"
+version = "0.1.0"
+description = "Meltano target for DB ClickHouse with clickhouse-connect package"
+authors = ["sergeyz06 <sergeyz06@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.*"
+
 [project]
 name = "epoch8-target-clickhouse"
 dynamic = ["version"]
