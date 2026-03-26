@@ -26,16 +26,51 @@ plugins:
 
     # TODO: Declare settings and their types here:
     settings:
+    - name: host
+      kind: password
+      sensitive: true
+      label: ""
+      description: ""
+
+    - name: port
+      kind: password
+      sensitive: true
+      label: ""
+      description: ""
+
     - name: username
-      label: Username
-      description: The username to use for authentication
+      kind: password
+      sensitive: true
+      label: ""
+      description: ""
 
     - name: password
       kind: password
-      label: Password
-      description: The password to use for authentication
       sensitive: true
+      label: ""
+      description: ""
+
+    - name: target_schema
+      label: ""
+      description: ""
+
+    - name: secure
+      label: ""
+      description: ""
+
+    - name: ca_cert
+      label: ""
+      description: ""
+
+    - name: send_receive_timeout
+      label: ""
+      description: ""
+
+    - name: upload_at
+      label: ""
+      description: ""
+
 
     # TODO: Declare required settings here:
     settings_group_validation:
-    - [username, password]
+    - [host, port, username, password]
