@@ -70,6 +70,10 @@ plugins:
       label: ""
       description: ""
 
+    - name: table_config
+      label: ""
+      description: ""
+
 
     # TODO: Declare required settings here:
     settings_group_validation:
