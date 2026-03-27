@@ -74,6 +74,10 @@ plugins:
       label: ""
       description: ""
 
+    - name: replication_method
+      label: ""
+      description: ""
+
 
     # TODO: Declare required settings here:
     settings_group_validation:

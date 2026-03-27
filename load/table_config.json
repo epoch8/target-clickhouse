@@ -5,13 +5,14 @@
             "partition_by": "created_at",
 			"partition_type": "toDate",
             "order_by": ["id"],
+            "settings": "index_granularity = 8192",
             "force_fields": {
-                "id": {"type": "Int32", "mode": "required"},
+                "id": {"type": "Int32"},
                 "description": {"type": "String", "mode": "Nullable"},
                 "verified": {"type": "Bool", "mode": "Nullable"},
                 "views": {"type": "Int32", "mode": "Nullable"},
-                "created_at": {"type": "DateTime64(0, 'UTC')", "mode": "required"},
-                "upload_at": {"type": "DateTime64(0, 'UTC')", "mode": "required"}
+                "created_at": {"type": "DateTime64(0, 'UTC')"},
+                "upload_at": {"type": "DateTime64(0, 'UTC')"}
             }
         }
     }

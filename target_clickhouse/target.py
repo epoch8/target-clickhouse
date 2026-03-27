@@ -91,6 +91,23 @@ class TargetClickhouse(Target):
             description="String values \"true\" or \"false\" are only allowed.",
             default="false",
         ),
+        th.Property(
+            "table_config",
+            th.StringType(nullable=False),
+            secret=False,
+            required=False,
+            title="",
+            description="",
+        ),
+        th.Property(
+            "replication_method",
+            th.StringType(nullable=False),
+            secret=False,
+            required=False,
+            title="Replication method",
+            description="String values \"append\" or \"truncate\" are only allowed.",
+            default="false",
+        ),
     ).to_dict()
 
     default_sink_class = ClickhouseSink

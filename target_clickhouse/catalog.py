@@ -6,12 +6,17 @@ COLUMNS_MAPPING = {
 }
 
 
+DDL__TRUNCATE_TABLE = """
+TRUNCATE TABLE IF EXISTS `{target_schema}`.`{table_name}`;
+"""
+
+
 DDL__CREATE_TABLE = """
 CREATE TABLE IF NOT EXISTS `{target_schema}`.`{table_name}`
 (
     {columns}
 )
-ENGINE = MergeTree()
+ENGINE = {engine}
 {partition_by}
-ORDER BY ({order_by});
+ORDER BY ({order_by}){settings};
 """
