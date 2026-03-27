@@ -187,4 +187,6 @@ class ClickhouseSink(RecordSink):
         """
         self.logger.debug("Cleaning up %s", self.stream_name)
         self.record_counter_metric.exit()
-        self.optimize_table()
+
+        if self.config.get("optimize") == "true":
+            self.optimize_table()
