@@ -1,10 +1,11 @@
 {
     "streams": {
         "animals": {
-            "engine": "MergeTree()",
-            "partition_by": "created_at",
+            "engine": "ReplacingMergeTree(upload_at)",
+            "partition_by": "upload_at",
 			"partition_type": "toDate",
             "order_by": ["id"],
+            "deduplicate": ["upload_at"],
             "settings": "index_granularity = 8192",
             "force_fields": {
                 "id": {"type": "Int32"},

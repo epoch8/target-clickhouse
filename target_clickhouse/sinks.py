@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from singer_sdk.sinks import RecordSink
-from singer_sdk.target_base import Target
 
 import clickhouse_connect
 import datetime
@@ -12,6 +11,7 @@ import json
 from target_clickhouse.catalog import COLUMNS_MAPPING
 from target_clickhouse.catalog import DDL__TRUNCATE_TABLE
 from target_clickhouse.catalog import DDL__CREATE_TABLE
+from target_clickhouse.catalog import DML__OPTIMIZE_TABLE
 
 
 class ClickhouseSink(RecordSink):
@@ -20,46 +20,46 @@ class ClickhouseSink(RecordSink):
     def __init__(self, target, stream_name, schema, key_properties):
         super().__init__(target, stream_name, schema, key_properties)
 
-        self.client = self.get_client(target)
-        self.target_schema = target.config.get("target_schema")
-        self.upload_at = target.config.get("upload_at") == "true"
+        self.client = self.get_client()
+        self.target_schema = self.config.get("target_schema")
+        self.upload_at = self.config.get("upload_at") == "true"
 
         self.table_config = {}
-        self.get_table_config(target)
+        self.get_table_config()
 
-        if target.config.get("replication_method") == "truncate":
+        if self.config.get("replication_method") == "truncate":
             self.truncate_table()
 
         self.create_table()
     
 
-    def get_client(self, target: Target) -> clickhouse_connect.driver.client:
+    def get_client(self) -> clickhouse_connect.driver.client:
         client_kwargs = {}
 
-        client_kwargs["host"] = target.config.get("host")
-        client_kwargs["port"] = target.config.get("port")
-        client_kwargs["username"] = target.config.get("username")
-        client_kwargs["password"] = target.config.get("password")
+        client_kwargs["host"] = self.config.get("host")
+        client_kwargs["port"] = self.config.get("port")
+        client_kwargs["username"] = self.config.get("username")
+        client_kwargs["password"] = self.config.get("password")
 
-        if target.config.get("secure"):
-            client_kwargs["secure"] = target.config.get("secure") == "true"
+        if self.config.get("secure"):
+            client_kwargs["secure"] = self.config.get("secure") == "true"
 
-        if target.config.get("ca_cert"):
-            client_kwargs["ca_cert"] = target.config.get("ca_cert")
+        if self.config.get("ca_cert"):
+            client_kwargs["ca_cert"] = self.config.get("ca_cert")
 
-        if target.config.get("send_receive_timeout"):
-            client_kwargs["send_receive_timeout"] = target.config.get("send_receive_timeout")
+        if self.config.get("send_receive_timeout"):
+            client_kwargs["send_receive_timeout"] = self.config.get("send_receive_timeout")
 
         return clickhouse_connect.get_client(**client_kwargs)
     
 
-    def get_table_config(self, target: Target):
-        if table_config_file := target.config.get("table_config"):
+    def get_table_config(self) -> None:
+        if table_config_file := self.config.get("table_config"):
             with open(table_config_file, "r") as file:
                 self.table_config = json.load(file).get("streams", {}).get(self.stream_name)
     
 
-    def truncate_table(self):
+    def truncate_table(self) -> None:
         ddl__truncate_table = DDL__TRUNCATE_TABLE.format(
             target_schema=self.target_schema,
             table_name=self.stream_name,
@@ -68,7 +68,7 @@ class ClickhouseSink(RecordSink):
         self.client.command(ddl__truncate_table)
     
 
-    def create_table(self):
+    def create_table(self) -> None:
         columns = []
 
         for key, value in self.schema["properties"].items():
@@ -111,9 +111,9 @@ class ClickhouseSink(RecordSink):
         )
         
         order_by = (
-            ",".join([f"`{order_by_column}`" for order_by_column in self.table_config.get("order_by")])
+            ", ".join([f"`{order_by_column}`" for order_by_column in self.table_config.get("order_by")])
             if self.table_config.get("order_by")
-            else ",".join([f"`{key_property}`" for key_property in self._key_properties])
+            else ", ".join([f"`{key_property}`" for key_property in self._key_properties])
         )
 
         settings = (
@@ -154,3 +154,37 @@ class ClickhouseSink(RecordSink):
             column_names=column_names,
             database=self.target_schema,
         )
+    
+
+    def optimize_table(self) -> None:
+        order_by = (
+            [f"{order_by_column}" for order_by_column in self.table_config.get("order_by")]
+            if self.table_config.get("order_by")
+            else [f"{key_property}" for key_property in self._key_properties]
+        )
+
+        partition_by = [self.table_config.get("partition_by")]
+        deduplicate = self.table_config.get("deduplicate")
+
+        deduplicate = set(order_by + partition_by + deduplicate)
+        deduplicate = ", ".join([f"`{column}`" for column in deduplicate])
+
+        dml__optimize_table = DML__OPTIMIZE_TABLE.format(
+            target_schema=self.target_schema,
+            table_name=self.stream_name,
+            deduplicate=deduplicate,
+        )
+
+        self.client.command(dml__optimize_table)
+    
+
+    def clean_up(self) -> None:
+        """Perform any clean up actions required at end of a stream.
+
+        Implementations should ensure that clean up does not affect resources
+        that may be in use from other instances of the same sink. Stream name alone
+        should not be relied on, it's recommended to use a uuid as well.
+        """
+        self.logger.debug("Cleaning up %s", self.stream_name)
+        self.record_counter_metric.exit()
+        self.optimize_table()

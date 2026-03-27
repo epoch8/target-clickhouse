@@ -78,6 +78,10 @@ plugins:
       label: ""
       description: ""
 
+    - name: optimize
+      label: ""
+      description: ""
+
 
     # TODO: Declare required settings here:
     settings_group_validation:

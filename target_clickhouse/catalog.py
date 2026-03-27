@@ -20,3 +20,8 @@ ENGINE = {engine}
 {partition_by}
 ORDER BY ({order_by}){settings};
 """
+
+
+DML__OPTIMIZE_TABLE = """
+OPTIMIZE TABLE `{target_schema}`.`{table_name}` FINAL DEDUPLICATE BY {deduplicate};
+"""

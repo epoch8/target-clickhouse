@@ -108,6 +108,15 @@ class TargetClickhouse(Target):
             description="String values \"append\" or \"truncate\" are only allowed.",
             default="false",
         ),
+        th.Property(
+            "optimize",
+            th.StringType(nullable=False),
+            secret=False,
+            required=False,
+            title="Optimize tables",
+            description="String values \"true\" or \"false\" are only allowed.",
+            default="false",
+        ),
     ).to_dict()
 
     default_sink_class = ClickhouseSink
