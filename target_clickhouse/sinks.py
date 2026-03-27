@@ -163,8 +163,8 @@ class ClickhouseSink(RecordSink):
             else [f"{key_property}" for key_property in self._key_properties]
         )
 
-        partition_by = [self.table_config.get("partition_by")]
-        deduplicate = self.table_config.get("deduplicate")
+        partition_by = [self.table_config.get("partition_by")] if self.table_config.get("partition_by") else []
+        deduplicate = self.table_config.get("deduplicate") if self.table_config.get("deduplicate") else []
 
         deduplicate = set(order_by + partition_by + deduplicate)
         deduplicate = ", ".join([f"`{column}`" for column in deduplicate])
