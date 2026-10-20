@@ -56,10 +56,7 @@ class ClickhouseSink(RecordSink):
     def get_table_config(self) -> None:
         if (table_config_file := self.config.get("table_config")) is not None:
             with open(table_config_file, "r") as file:
-                self.table_config = json.load(file).get("streams", {}).get(self.stream_name)
-        else:
-            self.table_config = {}
-    
+                self.table_config = json.load(file).get("streams", {}).get(self.stream_name) or {}
 
     def truncate_table(self) -> None:
         ddl__truncate_table = DDL__TRUNCATE_TABLE.format(
